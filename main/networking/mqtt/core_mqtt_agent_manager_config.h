@@ -29,21 +29,16 @@
 
 /* ESP-IDF sdkconfig include. */
 #include <sdkconfig.h>
+#include "vinit.h"
 
 #if CONFIG_GRI_RUN_QUALIFICATION_TEST
     #include "qualification_wrapper_config.h"
 #endif /* CONFIG_GRI_RUN_QUALIFICATION_TEST */
 
-/* *INDENT-OFF* */
-    #ifdef __cplusplus
-        extern "C" {
-    #endif
-/* *INDENT-ON* */
-
 /**
  * @brief The thing name of the device.
  */
-#define configCLIENT_IDENTIFIER                         ( CONFIG_GRI_THING_NAME )
+#define configCLIENT_IDENTIFIER                         ( device_id )
 
 /**
  * @brief The task stack size of the connection handling task.
@@ -105,11 +100,5 @@
  * @brief The task priority of the coreMQTT-Agent task.
  */
 #define configMQTT_AGENT_TASK_PRIORITY                  ( CONFIG_GRI_MQTT_AGENT_TASK_PRIORITY )
-
-/* *INDENT-OFF* */
-    #ifdef __cplusplus
-        } /* extern "C" */
-    #endif
-/* *INDENT-ON* */
 
 #endif /* CORE_MQTT_AGENT_MANAGER_CONFIG_H */

@@ -1,0 +1,31 @@
+set(MAIN_SRCS
+   "messaging.c"
+   "get_mesh_data.c"
+  
+)
+
+set(MAIN_INCLUDE_DIRS
+    "include"
+    
+)
+
+set(MAIN_REQUIRES
+    freertos
+    wifi_prov_mgr
+    driver
+    nvs_flash
+    esp_timer
+    esp_event
+    esp_netif 
+    json
+    get_time
+)
+
+idf_component_register(
+    SRCS
+        ${MAIN_SRCS}
+    INCLUDE_DIRS
+        ${MAIN_INCLUDE_DIRS}
+    REQUIRES
+        ${MAIN_REQUIRES}
+)

@@ -47,7 +47,7 @@
 
 /* OTACodeSigningDemo demo includes. */
 #include "ota_pal.h"
-#include "ota_over_mqtt_demo.h"
+#include "ota_mqtt.h"
 
 /* ESP Secure Certificate Manager include. */
 #include "esp_secure_cert_read.h"
@@ -63,8 +63,8 @@
 #include "ota_pal_test.h"
 #include "mqtt_test.h"
 
-#define keyCLIENT_CERTIFICATE_PEM    NULL
-#define keyCLIENT_PRIVATE_KEY_PEM    NULL
+#define keyCLIENT_CERTIFICATE_PEM NULL
+#define keyCLIENT_PRIVATE_KEY_PEM NULL
 
 /* Global variables ***********************************************************/
 
@@ -85,20 +85,20 @@ extern const uint8_t root_cert_auth_crt_start[] asm ( "_binary_root_cert_auth_cr
 extern const uint8_t root_cert_auth_crt_end[] asm ( "_binary_root_cert_auth_crt_end" );
 
 /**
- * @brief The code signing certificate from
+ * @brief The code signing certificate from 
  * components/FreeRTOS-Libraries-Integration-Tests/FreeRTOS-Libraries-Integration-Tests/src/ota/test_files/ecdsa-sha256-signer.crt.pem.test
  */
-const char pcOtaPalTestCodeSigningCertPem[] =                            \
-    "-----BEGIN CERTIFICATE-----\n"                                      \
-    "MIIBXDCCAQOgAwIBAgIJAPMhJT8l0C6AMAoGCCqGSM49BAMCMCExHzAdBgNVBAMM\n" \
-    "FnRlc3Rfc2lnbmVyQGFtYXpvbi5jb20wHhcNMTgwNjI3MjAwNDQyWhcNMTkwNjI3\n" \
-    "MjAwNDQyWjAhMR8wHQYDVQQDDBZ0ZXN0X3NpZ25lckBhbWF6b24uY29tMFkwEwYH\n" \
-    "KoZIzj0CAQYIKoZIzj0DAQcDQgAEyza/tGLVbVxhL41iYtC8D6tGEvAHu498gNtq\n" \
-    "DtPsKaoR3t5xQx+6zdWiCi32fgFT2vkeVAmX3pf/Gl8nIP48ZqMkMCIwCwYDVR0P\n" \
-    "BAQDAgeAMBMGA1UdJQQMMAoGCCsGAQUFBwMDMAoGCCqGSM49BAMCA0cAMEQCIDkf\n" \
-    "83Oq8sOXhSyJCWAN63gc4vp9//RFCXh/hUXPYcTWAiBgmQ5JV2MZH01Upi2lMflN\n" \
-    "YLbC+lYscwcSlB2tECUbJA==\n"                                         \
-    "-----END CERTIFICATE-----\n";
+const char pcOtaPalTestCodeSigningCertPem[] = \
+"-----BEGIN CERTIFICATE-----\n"\
+"MIIBXDCCAQOgAwIBAgIJAPMhJT8l0C6AMAoGCCqGSM49BAMCMCExHzAdBgNVBAMM\n"\
+"FnRlc3Rfc2lnbmVyQGFtYXpvbi5jb20wHhcNMTgwNjI3MjAwNDQyWhcNMTkwNjI3\n"\
+"MjAwNDQyWjAhMR8wHQYDVQQDDBZ0ZXN0X3NpZ25lckBhbWF6b24uY29tMFkwEwYH\n"\
+"KoZIzj0CAQYIKoZIzj0DAQcDQgAEyza/tGLVbVxhL41iYtC8D6tGEvAHu498gNtq\n"\
+"DtPsKaoR3t5xQx+6zdWiCi32fgFT2vkeVAmX3pf/Gl8nIP48ZqMkMCIwCwYDVR0P\n"\
+"BAQDAgeAMBMGA1UdJQQMMAoGCCsGAQUFBwMDMAoGCCqGSM49BAMCA0cAMEQCIDkf\n"\
+"83Oq8sOXhSyJCWAN63gc4vp9//RFCXh/hUXPYcTWAiBgmQ5JV2MZH01Upi2lMflN\n"\
+"YLbC+lYscwcSlB2tECUbJA==\n"\
+"-----END CERTIFICATE-----\n";
 
 /**
  * @brief Socket send and receive timeouts to use.  Specified in milliseconds.
@@ -106,8 +106,8 @@ const char pcOtaPalTestCodeSigningCertPem[] =                            \
 #define mqttexampleTRANSPORT_SEND_RECV_TIMEOUT_MS    ( 750 )
 
 #if ( MQTT_TEST_ENABLED == 1 ) || ( TRANSPORT_INTERFACE_TEST_ENABLED == 1 )
-static TransportInterface_t xTransport = { 0 };
-static NetworkContext_t xSecondNetworkContext = { 0 };
+    static TransportInterface_t xTransport = { 0 };
+    static NetworkContext_t xSecondNetworkContext = { 0 };
 #endif /* ( MQTT_TEST_ENABLED == 1 ) || ( TRANSPORT_INTERFACE_TEST_ENABLED == 1 ) */
 
 /**
@@ -118,18 +118,14 @@ static NetworkContext_t xSecondNetworkContext = { 0 };
  */
 static uint32_t ulGlobalEntryTimeMs;
 
-static BaseType_t prvInitializeNetworkContext( char * pcServerName,
-                                               int xPort,
-                                               char * pcCaCert,
-                                               char * pcDeviceCert,
-                                               char * pcDeviceKey );
+static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, char * pcCaCert, char * pcDeviceCert, char * pcDeviceKey );
 /*-----------------------------------------------------------*/
 
 
 #if ( MQTT_TEST_ENABLED == 1 ) || ( TRANSPORT_INTERFACE_TEST_ENABLED == 1 )
     static NetworkConnectStatus_t prvTransportNetworkConnect( void * pvNetworkContext,
-                                                              TestHostInfo_t * pxHostInfo,
-                                                              void * pvNetworkCredentials )
+                                                            TestHostInfo_t * pxHostInfo,
+                                                            void * pvNetworkCredentials )
     {
         ( void ) pvNetworkCredentials;
 
@@ -158,11 +154,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
     ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 )
     static NetworkContext_t xNetworkContext = { 0 };
 
-    static BaseType_t prvInitializeNetworkContext( char * pcServerName,
-                                                   int xPort,
-                                                   char * pcCaCert,
-                                                   char * pcDeviceCert,
-                                                   char * pcDeviceKey )
+    static BaseType_t prvInitializeNetworkContext( char * pcServerName, int xPort, char * pcCaCert, char * pcDeviceCert, char * pcDeviceKey )
     {
         /* This is returned by this function. */
         BaseType_t xRet = pdPASS;
@@ -171,12 +163,12 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
         esp_err_t xEspErrRet = ESP_OK;
 
         /* Verify that the MQTT endpoint and thing name have been configured by the
-         * user. */
+        * user. */
         if( strlen( pcServerName ) == 0 )
         {
             ESP_LOGE( TAG, "Empty endpoint for MQTT broker. Set endpoint by "
-                           "running idf.py menuconfig, then Golden Reference Integration -> "
-                           "Endpoint for MQTT Broker to use." );
+                        "running idf.py menuconfig, then Golden Reference Integration -> "
+                        "Endpoint for MQTT Broker to use." );
             xRet = pdFAIL;
         }
 
@@ -189,14 +181,14 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
         if( ( pcDeviceCert ) && ( strlen( pcDeviceCert ) > 0 ) )
         {
             xNetworkContext.pcClientCert = pcDeviceCert;
-            xNetworkContext.pcClientCertSize = strlen( pcDeviceCert );
+            xNetworkContext.pcClientCertSize = strlen(pcDeviceCert);
         }
         else
         {
-            xEspErrRet = esp_secure_cert_get_device_cert( ( char ** ) &xNetworkContext.pcClientCert,
-                                                          &xNetworkContext.pcClientCertSize );
+            xEspErrRet = esp_secure_cert_get_device_cert( (char **)&xNetworkContext.pcClientCert,
+                                                            &xNetworkContext.pcClientCertSize);
         }
-
+        
         if( xEspErrRet == ESP_OK )
         {
             #if CONFIG_GRI_OUTPUT_CERTS_KEYS
@@ -221,7 +213,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
         }
         else
         {
-            xNetworkContext.pcServerRootCA = ( const char * ) root_cert_auth_crt_start;
+            xNetworkContext.pcServerRootCA = (const char *) root_cert_auth_crt_start;
             xNetworkContext.pcServerRootCASize = root_cert_auth_crt_end - root_cert_auth_crt_start;
         }
 
@@ -229,7 +221,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
         {
             #if CONFIG_GRI_OUTPUT_CERTS_KEYS
                 ESP_LOGI( TAG, "\nQualification CA Cert: \nLength: %d\n%s",
-                          ( int ) xNetworkContext.pcServerRootCASize,
+                          (int)xNetworkContext.pcServerRootCASize,
                           xNetworkContext.pcServerRootCA );
             #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
         }
@@ -242,7 +234,6 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
         }
 
         #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
-
             /* If the digital signature peripheral is being used, get the digital
              * signature peripheral context from esp_secure_crt_mgr and put into
              * network context. */
@@ -254,8 +245,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
                 ESP_LOGE( TAG, "Error in getting digital signature peripheral data." );
                 xRet = pdFAIL;
             }
-        #else /* if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
-
+        #else
             /* If the DS peripheral is not being used, get the device private key from
              * esp_secure_crt_mgr and put into network context. */
 
@@ -266,22 +256,22 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
             }
             else
             {
-                xEspErrRet = esp_secure_cert_get_priv_key( ( char ** ) &xNetworkContext.pcClientKey,
-                                                           &xNetworkContext.pcClientKeySize );
+                xEspErrRet = esp_secure_cert_get_priv_key( (char **)&xNetworkContext.pcClientKey,
+                                                                &xNetworkContext.pcClientKeySize);
             }
 
             if( xEspErrRet == ESP_OK )
             {
                 #if CONFIG_GRI_OUTPUT_CERTS_KEYS
                     ESP_LOGI( TAG, "\nQualification private Key: \nLength: %d\n%s",
-                              ( int ) xNetworkContext.pcClientKeySize,
+                              (int)xNetworkContext.pcClientKeySize,
                               xNetworkContext.pcClientKey );
                 #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
             }
             else
             {
                 ESP_LOGE( TAG, "Error in getting private key. Error: %s",
-                          esp_err_to_name( xEspErrRet ) );
+                        esp_err_to_name( xEspErrRet ) );
 
                 xRet = pdFAIL;
             }
@@ -311,8 +301,8 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
             }
             else
             {
-                xEspErrRet = esp_secure_cert_get_device_cert( ( char ** ) &xSecondNetworkContext.pcClientCert,
-                                                              &xSecondNetworkContext.pcClientCertSize );
+                xEspErrRet = esp_secure_cert_get_device_cert( (char **)&xSecondNetworkContext.pcClientCert,
+                                                                &xSecondNetworkContext.pcClientCertSize);
             }
 
             /* Get the root CA certificate and put into second network context. */
@@ -323,11 +313,10 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
             }
             else
             {
-                xSecondNetworkContext.pcServerRootCA = ( const char * ) root_cert_auth_crt_start;
+                xSecondNetworkContext.pcServerRootCA = (const char *) root_cert_auth_crt_start;
             }
 
             #if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL
-
                 /* If the digital signature peripheral is being used, get the digital
                  * signature peripheral context from esp_secure_crt_mgr and put into
                  * second network context. */
@@ -339,8 +328,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
                     ESP_LOGE( TAG, "Error in getting digital signature peripheral data." );
                     xRet = pdFAIL;
                 }
-            #else /* if CONFIG_ESP_SECURE_CERT_DS_PERIPHERAL */
-
+            #else
                 /* If the DS peripheral is not being used, get the device private key from
                  * esp_secure_crt_mgr and put into second network context. */
 
@@ -351,8 +339,8 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
                 }
                 else
                 {
-                    xEspErrRet = esp_secure_cert_get_priv_key( ( char ** ) &xSecondNetworkContext.pcClientKey,
-                                                               &xSecondNetworkContext.pcClientKeySize );
+                    xEspErrRet = esp_secure_cert_get_priv_key( (char **)&xSecondNetworkContext.pcClientKey,
+                                                                    &xSecondNetworkContext.pcClientKeySize);
                 }
 
                 if( xEspErrRet == ESP_OK )
@@ -362,7 +350,7 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
                 else
                 {
                     ESP_LOGE( TAG, "Error in getting private key. Error: %s",
-                              esp_err_to_name( xEspErrRet ) );
+                            esp_err_to_name( xEspErrRet ) );
 
                     xRet = pdFAIL;
                 }
@@ -382,8 +370,8 @@ static BaseType_t prvInitializeNetworkContext( char * pcServerName,
 
         return xRet;
     }
-#endif /* ( MQTT_TEST_ENABLED == 1 ) || ( TRANSPORT_INTERFACE_TEST_ENABLED == 1 ) ||
-        * ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 ) */
+#endif /* ( MQTT_TEST_ENABLED == 1 ) || ( TRANSPORT_INTERFACE_TEST_ENABLED == 1 ) || 
+          ( DEVICE_ADVISOR_TEST_ENABLED == 1 ) || ( OTA_E2E_TEST_ENABLED == 1 ) */
 /*-----------------------------------------------------------*/
 
 uint32_t MqttTestGetTimeMs( void )
@@ -395,7 +383,7 @@ uint32_t MqttTestGetTimeMs( void )
     xTickCount = xTaskGetTickCount();
 
     /* Convert the ticks to milliseconds. */
-    ulTimeMs = ( uint32_t ) ( xTickCount * 1000 / configTICK_RATE_HZ );
+    ulTimeMs = ( uint32_t ) ( xTickCount * 1000 / configTICK_RATE_HZ ) ;
 
     /* Reduce ulGlobalEntryTimeMs from obtained time so as to always return the
      * elapsed time in the application. */
@@ -412,7 +400,7 @@ uint32_t MqttTestGetTimeMs( void )
 
         /* Initialization of timestamp for MQTT. */
         ulGlobalEntryTimeMs = MqttTestGetTimeMs();
-
+        
         /* Setup the transport interface. */
         xTransport.send = espTlsTransportSend;
         xTransport.recv = espTlsTransportRecv;
@@ -431,7 +419,7 @@ uint32_t MqttTestGetTimeMs( void )
     void SetupTransportTestParam( TransportTestParam_t * pTestParam )
     {
         configASSERT( pTestParam != NULL );
-
+        
         /* Setup the transport interface. */
         xTransport.send = espTlsTransportSend;
         xTransport.recv = espTlsTransportRecv;
@@ -454,13 +442,13 @@ uint32_t MqttTestGetTimeMs( void )
 
 void runQualification( void * pvArgs )
 {
-    ( void ) pvArgs;
+    (void) pvArgs;
 
-    ESP_LOGI( TAG, "Run qualification test." );
+	ESP_LOGI( TAG, "Run qualification test." );
 
     RunQualificationTest();
 
-    ESP_LOGI( TAG, "End qualification test." );
+	ESP_LOGI( TAG, "End qualification test." );
 
     for( ; ; )
     {
@@ -488,7 +476,7 @@ BaseType_t xQualificationStart( void )
             prvInitializeNetworkContext( ECHO_SERVER_ENDPOINT, ECHO_SERVER_PORT, ECHO_SERVER_ROOT_CA, keyCLIENT_CERTIFICATE_PEM, keyCLIENT_PRIVATE_KEY_PEM );
         #endif /* defined( TRANSPORT_CLIENT_PRIVATE_KEY ) */
     #endif /*  TRANSPORT_INTERFACE_TEST_ENABLED == 1 ) */
-
+    
     #if ( DEVICE_ADVISOR_TEST_ENABLED == 1 )
         if( xRet == pdPASS )
         {
@@ -516,8 +504,8 @@ BaseType_t xQualificationStart( void )
         {
             #if CONFIG_GRI_OUTPUT_CERTS_KEYS
                 ESP_LOGI( TAG, "\nCS Cert: \nLength: %d\n%s",
-                          strlen( pcAwsCodeSigningCertPem ),
-                          pcAwsCodeSigningCertPem );
+                        strlen( pcAwsCodeSigningCertPem ),
+                        pcAwsCodeSigningCertPem );
             #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
 
             if( otaPal_SetCodeSigningCertificate( pcAwsCodeSigningCertPem ) )
@@ -527,8 +515,8 @@ BaseType_t xQualificationStart( void )
             else
             {
                 ESP_LOGE( TAG,
-                          "Failed to set the code signing certificate for the AWS OTA "
-                          "library. OTA demo will not be started." );
+                        "Failed to set the code signing certificate for the AWS OTA "
+                        "library. OTA demo will not be started." );
 
                 configASSERT( 0 );
             }
@@ -540,8 +528,8 @@ BaseType_t xQualificationStart( void )
         {
             #if CONFIG_GRI_OUTPUT_CERTS_KEYS
                 ESP_LOGI( TAG, "\nCS Cert: \nLength: %d\n%s",
-                          strlen( pcOtaPalTestCodeSigningCertPem ),
-                          pcOtaPalTestCodeSigningCertPem );
+                        strlen( pcOtaPalTestCodeSigningCertPem ),
+                        pcOtaPalTestCodeSigningCertPem );
             #endif /* CONFIG_GRI_OUTPUT_CERTS_KEYS */
 
             if( otaPal_SetCodeSigningCertificate( pcOtaPalTestCodeSigningCertPem ) )
@@ -551,8 +539,8 @@ BaseType_t xQualificationStart( void )
             else
             {
                 ESP_LOGE( TAG,
-                          "Failed to set the code signing certificate for the AWS OTA "
-                          "library. OTA demo will not be started." );
+                        "Failed to set the code signing certificate for the AWS OTA "
+                        "library. OTA demo will not be started." );
 
                 configASSERT( 0 );
             }
@@ -566,7 +554,7 @@ BaseType_t xQualificationStart( void )
                               1,
                               NULL ) ) != pdPASS )
     {
-        ESP_LOGE( TAG, "Failed to start Qualification task: errno=%d", xRet );
+        ESP_LOGE( TAG, "Failed to start Qualfication task: errno=%d", xRet );
 
         configASSERT( 0 );
     }

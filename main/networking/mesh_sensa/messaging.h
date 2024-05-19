@@ -1,0 +1,152 @@
+#ifndef MESSAGING_H
+#define MESSAGING_H
+
+#pragma once
+
+#include "cJSON.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "esp_system.h"
+#include "driver/uart.h"
+#include "esp_wifi.h"
+#include "esp_now.h"
+#include "esp_event.h"
+#include "esp_log.h"
+#include "nvs_flash.h"
+#include "string.h"
+#include "math.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define BUF_SIZE 256
+#define UART_QUEUE_SIZE 0
+#define TASK_STACK_SIZE 4096
+#define TASK_PRIORITY 4
+
+
+
+// messageHandler can be any user defined function so long as it takes the message body as a cJSON pointer
+typedef void (*messageHandler)(cJSON* incomingMessage, const uint8_t* sourceMAC);
+
+typedef struct {
+    char* bodyserialized;
+    uint8_t destinationMAC[ESP_NOW_ETH_ALEN];
+} ESPNowMessage;
+
+extern esp_now_peer_info_t broadcastPeer;
+extern TaskHandle_t receiveSerialTaskHandle, receiveESPNowTaskHandle, sendESPNowTaskHandle, sendSerialTaskHandle, serialDaemonTaskHandle;
+extern QueueHandle_t incomingESPNowQueue, outgoingESPNowQueue, incomingSerialQueue, outgoingSerialQueue;
+
+/*-------------- Callbacks & ISRs --------------*/
+
+void initMessagingModule(void);
+void cleanupMessagingModule(void);
+void updateLatestIncomingMessage(cJSON* json);
+cJSON* getLatestIncomingMessage(void);
+
+
+// Logs ESP-NOW send status
+void OnESPNowSend(const uint8_t *mac_addr, esp_now_send_status_t status);
+
+// Interrupts, posts incoming messages to incomingESPNowQueue as uint8_t pointer
+//static void OnESPNowRecv(const esp_now_recv_info_t *recv_info, const uint8_t *incomingData, int len);
+
+/*-------------- Setup Functions --------------*/
+
+/**
+ * @brief Sets up components necessary for messaging via ESP-NOW.
+ * 
+ * @param handler User defined function to handle incoming messages. Expects a cJSON pointer.
+ * 
+ * @return ESP_OK if successful, ESP_FAIL if not.
+ * 
+ * @note Sets up wifi stack, sets callbacks, creates queues and tasks.
+*/
+//esp_err_t setupESPNow (messageHandler handler);
+esp_err_t setupESPNow(messageHandler handler, int ch, const uint8_t sensor_macs[][ESP_NOW_ETH_ALEN], size_t sensor_mac_count);
+
+/**
+ * @brief Sets up components necessary for messaging via UART.
+ * 
+ * @param handler User defined function to handle incoming messages. Expects a cJSON pointer.
+ * 
+ * @param txPin GPIO pin to use for UART TX.
+ * 
+ * @param rxPin GPIO pin to use for UART RX.
+ * 
+ * @return ESP_OK if successful, ESP_FAIL if not.
+ * 
+ * @note Sets up UART driver, event queues, and tasks.
+*/
+esp_err_t setupSerial(messageHandler handler, const int txPin, const int rxPin);
+
+/*-------------- RTOS Tasks --------------*/
+
+/**
+ * @brief RTOS Task that receives outgoing messages from outgoingESPNowQueue and sends them via ESP-NOW.
+ * 
+ * @note Receives data as a char pointer (JSON is serialized in sendMessageESPNow)
+*/
+void sendESPNowTask(void *pvParameters);
+
+/**
+ * @brief RTOS Task that receives outgoing messages from outgoingSerialQueue and sends them via UART.
+ * 
+ * @note Receives data as char pointer (JSON is serialized in sendMessageSerial)
+*/
+void sendSerialTask(void *pvParameters);
+
+/**
+ * @brief RTOS Task that receives data from incomingESPNowQueue and passes to user defined handler.
+ * 
+ * @note receives data as uint8_t pointer and parses to cJSON object
+*/
+void receiveESPNowTask (void* pvParameters);
+
+
+/*-------------- Messaging Functions --------------*/
+
+/**
+ * @brief Re-serializes a cJSON object and posts it to outgoingSerialQueue.
+ * 
+ * @param body A cJSON object already parsed by receiveSerialTask or receiveESPNowTask.
+ * 
+ * @return ESP_OK if successful, ESP_FAIL if not.
+ */
+esp_err_t sendMessageSerial(cJSON* body);
+
+
+/**
+     * @brief Sends a message over ESP-NOW protocol.
+     *
+     * This function takes a cJSON object representing the message body and the destination MAC address as inputs.
+     *
+     * @param body A cJSON object representing the message body.
+     * @param destinationMAC The MAC address of the destination device.
+     * @return - ESP_OK if the message was successfully sent.
+     *         - ESP_FAIL if there was an error sending the message.
+     *
+     * @note The `body` cJSON object will be deleted after sending the message.
+     *
+     * @example
+     * ```c
+     * cJSON* messageBody = cJSON_CreateObject();
+     * cJSON_AddStringToObject(messageBody, "key", "value");
+     * const uint8_t destinationMAC[] = {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF};
+     * esp_err_t result = sendMessageESPNow(messageBody, destinationMAC);
+     * ```
+*/
+//esp_err_t sendMessageESPNow(cJSON* body, const uint8_t* destinationMAC);
+esp_err_t sendMessageESPNow(cJSON *body, const uint8_t *destinationMAC);
+void mesh_sensor_data_handler(cJSON *incomingMessage, const uint8_t *mac_addr);
+void sensor_data_task(void *pvParameters);
+
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // MESSAGING_H

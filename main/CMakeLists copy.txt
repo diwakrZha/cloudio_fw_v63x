@@ -1,0 +1,105 @@
+set(MAIN_SRCS
+    "main.c"
+    "networking/wifi/app_wifi.c"
+    #"networking/wifi/data_store_nvs.c"
+    #"networking/wifi/http_server.c"
+    #"networking/wifi/scan.c"
+    #"networking/wifi/nvs_platform.c"
+    "networking/mqtt/subscription_manager.c"
+    "networking/mqtt/core_mqtt_agent_manager.c"
+    "networking/mqtt/core_mqtt_agent_manager_events.c"
+    "core/libraries/cJSON.c"
+    "core/libraries/dev_wdt.c"
+    "core/libraries/dev_sleep.c"
+    "core/extra/buzzer.c"
+    "core/extra/uart_handler.c"
+    "core/extra/ldo_control.c"
+    "core/extra/sensors.c"
+    "core/extra/psm_routine.c"
+    "core/extra/led.c"
+    "core/extra/ping_time.c"
+    "core/extra/json_payload.c"
+    "core/extra/aws_config_handler.c"
+    "core/extra/vinit.c"
+)
+
+# Demo enables
+
+# Sub Pub Unsub demo
+if(CONFIG_GRI_ENABLE_SUB_PUB_UNSUB_DEMO)
+    list(APPEND MAIN_SRCS "tasks/shadow_pub/shadow_pub.c")
+endif()
+
+# Temperature Sub Pub and LED control demo
+if(SENSOR_TO_AWS)
+    list(APPEND MAIN_SRCS 
+        "tasks/shadow_pub/shadow_pub.c"
+    )
+endif()
+
+
+# Temperature Sub Pub and LED control demo
+if(CONFIG_GRI_ENABLE_TEMPERATURE_PUB_SUB_AND_LED_CONTROL_DEMO)
+    list(APPEND MAIN_SRCS 
+        "tasks/publish_data/publish_data.c"
+    )
+endif()
+
+# OTA demo
+if(CONFIG_GRI_ENABLE_OTA_DEMO)
+    list(APPEND MAIN_SRCS "tasks/ota_over_mqtt_demo/ota_mqtt.c")
+endif()
+
+# Qualification Test
+if( CONFIG_GRI_RUN_QUALIFICATION_TEST )
+    list(APPEND MAIN_SRCS 
+        "qualification_app_main.c"
+        "tasks/ota_over_mqtt_demo/ota_mqtt.c"
+        "tasks/shadow_pub/shadow_pub.c")
+endif()
+
+set(MAIN_INCLUDE_DIRS
+    "."
+    "tasks/ota_over_mqtt_demo"
+    "tasks/shadow_pub"
+    "tasks/publish_data"
+    "networking/wifi"
+    "networking/mqtt"
+    "core/libraries"
+    "core/include"
+)
+
+set(MAIN_REQUIRES
+    qrcode
+    wifi_provisioning
+    coreMQTT
+    coreMQTT-Agent
+    corePKCS11
+    coreJSON
+    backoffAlgorithm
+    esp_secure_cert_mgr
+    ota-for-aws-iot-embedded-sdk
+    FreeRTOS-Libraries-Integration-Tests
+    unity
+    driver
+    esp_http_server
+    esp_adc
+
+)
+
+idf_component_register(
+    SRCS
+        ${MAIN_SRCS}
+    INCLUDE_DIRS
+        ${MAIN_INCLUDE_DIRS}
+    REQUIRES
+        ${MAIN_REQUIRES}
+)
+
+# OTA demo
+if( CONFIG_GRI_ENABLE_OTA_DEMO OR CONFIG_GRI_RUN_QUALIFICATION_TEST )
+    target_add_binary_data(${COMPONENT_TARGET} "certs/aws_codesign.crt" TEXT)
+endif()
+
+# Root Certificate
+target_add_binary_data(${COMPONENT_TARGET} "certs/root_cert_auth.crt" TEXT)
