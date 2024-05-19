@@ -1,0 +1,2 @@
+WIFISSID=""
+WIFIPASS=""
