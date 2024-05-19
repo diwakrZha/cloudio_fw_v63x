@@ -7,7 +7,7 @@
  */
 #pragma once
 #include <esp_err.h>
-
+#include <stdbool.h>
 /* *INDENT-OFF* */
 #ifdef __cplusplus
     extern "C" {
@@ -27,8 +27,9 @@ void app_wifi_init();
 esp_err_t app_wifi_start( app_wifi_pop_type_t pop_type );
 
 esp_err_t app_wifi_connect();
-bool app_wifi_is_connected();
-void vWaitOnWifiConnected( void );
+esp_err_t reset_wifi_credentials();
+//bool app_wifi_is_connected();
+void vWaitOnWifiConnected();
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus

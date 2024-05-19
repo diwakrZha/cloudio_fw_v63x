@@ -2,5 +2,6 @@
     "idf.adapterTargetName": "esp32c6",
     "idf.openOcdConfigs": [
         "board/esp32c6-bridge.cfg"
-    ]
+    ],
+    "idf.port": "/dev/cu.usbmodem21201"
 }

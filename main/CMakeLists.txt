@@ -86,7 +86,7 @@ set(MAIN_INCLUDE_DIRS
 )
 
 set(MAIN_REQUIRES
-    qrcode
+    #qrcode
     wifi_prov_mgr
     #wifi_provisioning
     coreMQTT

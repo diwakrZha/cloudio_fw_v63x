@@ -410,6 +410,24 @@ esp_err_t app_wifi_start( app_wifi_pop_type_t pop_type )
     return ESP_OK;
 }
 
+esp_err_t reset_wifi_credentials(void)
+{
+    esp_err_t err = wifi_prov_mgr_reset_provisioning();
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(TAG, "wifi_prov_mgr_reset_provisioning failed %d", err);
+        // Handle the error here, e.g., print an error message or take appropriate action.
+    }
+    else
+    {
+        ESP_LOGI(TAG, "wifi_prov_mgr_reset_provisioning succeeded");
+        esp_restart();
+    }
+
+    return err;
+}
+
+
 void vWaitOnWifiConnected( void )
 {
     xEventGroupWaitBits( wifi_event_group, WIFI_CONNECTED_EVENT, false, true, portMAX_DELAY );
